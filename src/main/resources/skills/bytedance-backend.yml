@@ -1,0 +1,32 @@
+bytedance-backend:
+  name: "字节跳动后端"
+  description: "对标字节跳动后端面试，侧重高并发、性能优化、算法基础"
+  categories:
+    - name: "算法与数据结构"
+      weight: 30
+      topics:
+        - "哈希表与堆"
+        - "二叉树遍历与变种"
+        - "动态规划基础"
+        - "链表与双指针"
+    - name: "操作系统"
+      weight: 25
+      topics:
+        - "虚拟内存与缺页"
+        - "进程线程协程"
+        - "IO多路复用"
+        - "Linux 常用命令与排查"
+    - name: "网络与协议"
+      weight: 20
+      topics:
+        - "TCP 拥塞控制"
+        - "HTTP/2 与 HTTP/3"
+        - "DNS 与 CDN"
+        - "RPC 框架原理"
+    - name: "高并发设计"
+      weight: 25
+      topics:
+        - "缓存穿透/击穿/雪崩"
+        - "消息队列削峰"
+        - "分布式锁"
+        - "限流与熔断"

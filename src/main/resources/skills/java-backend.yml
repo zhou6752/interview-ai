@@ -1,0 +1,37 @@
+java-backend:
+  name: "Java 后端开发"
+  description: "涵盖 Java 核心、Spring 框架、数据库、分布式架构等后端技术栈"
+  categories:
+    - name: "Java核心"
+      weight: 30
+      topics:
+        - "集合框架源码"
+        - "多线程与JUC"
+        - "JVM内存模型与GC"
+        - "IO模型与NIO"
+    - name: "Spring框架"
+      weight: 25
+      topics:
+        - "IOC与AOP原理"
+        - "Spring Boot自动配置"
+        - "事务传播机制"
+        - "Bean生命周期"
+    - name: "数据库与缓存"
+      weight: 20
+      topics:
+        - "MySQL索引与优化"
+        - "Redis数据结构与应用"
+        - "分库分表方案"
+    - name: "分布式架构"
+      weight: 15
+      topics:
+        - "微服务治理"
+        - "消息队列"
+        - "分布式事务"
+        - "服务发现"
+    - name: "系统设计"
+      weight: 10
+      topics:
+        - "设计模式实战"
+        - "高并发架构"
+        - "性能调优"

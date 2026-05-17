@@ -1,0 +1,38 @@
+general:
+  name: "通用技术面试"
+  description: "通用 IT 技术面试，从计算机基础、数据结构到编码能力综合考察"
+  categories:
+    - name: "数据结构与算法"
+      weight: 30
+      topics:
+        - "数组与链表"
+        - "栈与队列"
+        - "树与图"
+        - "排序与搜索"
+        - "动态规划"
+    - name: "操作系统"
+      weight: 20
+      topics:
+        - "进程与线程"
+        - "内存管理"
+        - "文件系统"
+        - "死锁"
+    - name: "计算机网络"
+      weight: 20
+      topics:
+        - "TCP/IP协议栈"
+        - "HTTP与HTTPS"
+        - "DNS与CDN"
+        - "Socket编程"
+    - name: "数据库基础"
+      weight: 15
+      topics:
+        - "SQL基础"
+        - "事务与锁"
+        - "索引原理"
+    - name: "编码能力"
+      weight: 15
+      topics:
+        - "代码质量"
+        - "问题分解"
+        - "边界条件处理"

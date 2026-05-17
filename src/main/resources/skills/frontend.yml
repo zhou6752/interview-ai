@@ -1,0 +1,38 @@
+frontend:
+  name: "前端工程师"
+  description: "涵盖 HTML/CSS 基础、JavaScript 核心、主流框架、工程化等前端技术栈"
+  categories:
+    - name: "JavaScript核心"
+      weight: 30
+      topics:
+        - "闭包与作用域链"
+        - "原型链与继承"
+        - "事件循环与异步编程"
+        - "ES6+新特性"
+    - name: "CSS与布局"
+      weight: 20
+      topics:
+        - "Flexbox与Grid布局"
+        - "BFC与定位"
+        - "响应式设计"
+        - "CSS动画"
+    - name: "框架与生态"
+      weight: 25
+      topics:
+        - "Vue 3 响应式原理"
+        - "React Hooks"
+        - "状态管理"
+        - "组件通信"
+    - name: "工程化"
+      weight: 15
+      topics:
+        - "Webpack与Vite"
+        - "性能优化"
+        - "前端安全"
+        - "TypeScript"
+    - name: "网络与浏览器"
+      weight: 10
+      topics:
+        - "HTTP协议"
+        - "浏览器渲染原理"
+        - "跨域解决方案"

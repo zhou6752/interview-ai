@@ -1,0 +1,32 @@
+ai-agent:
+  name: "AI Agent 开发"
+  description: "涵盖 LLM 应用、Agent 架构、RAG、Prompt Engineering 等 AI 工程化方向"
+  categories:
+    - name: "LLM 基础"
+      weight: 25
+      topics:
+        - "Transformer 架构"
+        - "Prompt Engineering"
+        - "Token 与上下文窗口"
+        - "温度与采样策略"
+    - name: "RAG 与检索"
+      weight: 25
+      topics:
+        - "向量数据库选型"
+        - "Embedding 模型对比"
+        - "Query Rewrite 策略"
+        - "Chunk 分割与召回"
+    - name: "Agent 架构"
+      weight: 30
+      topics:
+        - "ReAct 模式"
+        - "Function Calling"
+        - "多 Agent 协作"
+        - "记忆与上下文管理"
+    - name: "工程落地"
+      weight: 20
+      topics:
+        - "流式输出与 SSE"
+        - "Token 计费与优化"
+        - "安全与防注入"
+        - "LangChain / Spring AI 对比"

@@ -1,0 +1,104 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev   # dev=开发模式(控制台DEBUG), prod=生产模式(控制台+文件,INFO以上)
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+      - org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAutoConfiguration
+      - org.springframework.ai.autoconfigure.chat.client.ChatClientAutoConfiguration
+  ai:
+    openai:
+      api-key: placeholder
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      chat:
+        options:
+          model: qwen-turbo
+          temperature: 0.7
+  servlet:
+    multipart:
+      max-file-size: 5MB       # 单个文件最大 5MB
+      max-request-size: 5MB    # 整个请求最大 5MB（含多个文件时）
+
+  # ========== 数据库配置 ==========
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/interview_ai?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # ========== JPA 配置 ==========
+  jpa:
+    hibernate:
+      ddl-auto: update       # 启动时自动建表/更新表（开发用），生产环境用 validate
+    show-sql: false            # 控制台不打印 JPA 生成的 SQL（需要调试时改回 true）
+    properties:
+      hibernate:
+        format_sql: true      # 格式化 SQL，方便看
+
+  # ========== Redis 配置 ==========
+  data:
+    redis:
+      host: localhost         # Redis 服务器地址（Docker 在本机）
+      port: 6379              # Redis 默认端口
+      timeout: 5000           # 连接超时（毫秒）
+      lettuce:
+        pool:
+          max-active: 8       # 连接池最大连接数
+          max-idle: 4         # 连接池最大空闲数
+          min-idle: 0         # 连接池最小空闲数
+
+jwt:
+  secret: ${JWT_SECRET:MyJWTSecretKeyThatIsAtLeast32CharactersLong!!}
+  expiration: 86400000
+
+app:
+  encryption-key: ${ENCRYPTION_KEY:InterviewAISecret2024}
+  pgvector:
+    url: jdbc:postgresql://${PG_HOST:localhost}:5433/interview_ai_vector?currentSchema=public
+    username: vector_user
+    password: ${PG_PASSWORD:vector_pass}
+    driver-class-name: org.postgresql.Driver
+  interview:
+    default-question-count: 6
+    follow-up-count: 1
+    evaluation-batch-size: 8
+    session-ttl-minutes: 60
+  embedding:
+    model: text-embedding-v3
+  providers:
+    - id: dashscope
+      name: "阿里云百炼"
+      base-url: "https://dashscope.aliyuncs.com/compatible-mode"
+      default-model: "qwen-turbo"
+      supports-embedding: true
+      models:
+        - "qwen-turbo"
+        - "qwen-plus"
+        - "qwen-max"
+    - id: deepseek
+      name: "DeepSeek"
+      base-url: "https://api.deepseek.com/v1"
+      default-model: "deepseek-chat"
+      supports-embedding: false
+      models:
+        - "deepseek-chat"
+        - "deepseek-reasoner"
+    - id: kimi
+      name: "Moonshot Kimi"
+      base-url: "https://api.moonshot.cn/v1"
+      default-model: "moonshot-v1-8k"
+      supports-embedding: false
+      models:
+        - "moonshot-v1-8k"
+        - "moonshot-v1-32k"
+    - id: glm
+      name: "智谱 GLM"
+      base-url: "https://open.bigmodel.cn/api/paas/v4"
+      default-model: "glm-4-flash"
+      supports-embedding: true
+      models:
+        - "glm-4-flash"
+        - "glm-4-plus"

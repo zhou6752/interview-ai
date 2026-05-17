@@ -1,0 +1,36 @@
+python:
+  name: "Python 后端开发"
+  description: "涵盖 Python 核心语法、Web 框架、数据处理、系统设计等后端技术栈"
+  categories:
+    - name: "Python核心"
+      weight: 30
+      topics:
+        - "GIL与并发编程"
+        - "装饰器与元类"
+        - "内存管理与垃圾回收"
+        - "迭代器与生成器"
+    - name: "Web框架"
+      weight: 25
+      topics:
+        - "Django ORM与中间件"
+        - "Flask路由与插件"
+        - "FastAPI异步编程"
+        - "RESTful API设计"
+    - name: "数据库与缓存"
+      weight: 20
+      topics:
+        - "SQLAlchemy"
+        - "Redis应用"
+        - "数据库索引优化"
+    - name: "系统设计"
+      weight: 15
+      topics:
+        - "微服务架构"
+        - "消息队列(Celery)"
+        - "设计模式"
+    - name: "测试与部署"
+      weight: 10
+      topics:
+        - "pytest与mock"
+        - "Docker容器化"
+        - "CI/CD流水线"

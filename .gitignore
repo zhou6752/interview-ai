@@ -1,0 +1,52 @@
+# Maven 编译输出
+target/
+*.class
+
+# IDE 配置
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 前端依赖与构建产物
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# 日志文件
+logs/
+*.log
+
+# 环境配置（含敏感信息）
+.env
+.env.*.local
+.env.local
+
+# 本地 AI 模型缓存
+~/.interview_ai/
+*.onnx
+
+# Git Worktree 目录
+.worktrees/
+worktrees/
+
+# 临时测试文件
+test_resume.pdf
+
+# Trae AI 配置与技能（开源不推送）
+.trae/
+.planning/
+
+# 文档与规划文件（开源不推送）
+docs/
+bug_review_plan.md
+deepseek_规划.md
+learning-notes.md
+skills-lock.json
+项目全景文档.md

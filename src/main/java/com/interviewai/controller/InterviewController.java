@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// InterviewController —— 面试流程的 API 入口
-// 职责：接收 HTTP 请求、调 Service、返回结果。所有业务逻辑都在 InterviewService 里
 @RestController
 @RequestMapping("/api/interview")
 @Tag(name = "面试", description = "核心面试流程：开始面试 + 提交回答（SSE 流式返回）")
@@ -58,7 +56,9 @@ public class InterviewController {
     @PostMapping("/start")
     public Map<String, Object> startInterview(@RequestBody InterviewStartRequest request) {
         InterviewService.InterviewStartResult result = interviewService.startInterview(request);
+
         SessionContext session = sessionService.getSession(result.getSessionToken());
+
         Map<String, Object> data = new HashMap<>();
         data.put("sessionToken", result.getSessionToken());
         data.put("currentQuestionIndex", session.getCurrentQuestionIndex());
@@ -67,24 +67,23 @@ public class InterviewController {
         return data;
     }
 
-    @Operation(summary = "提交回答", description = "提交用户回答，流式返回 AI 评价和下一道面试题（SSE）。同一 session 同时只允许一个请求在处理")
+    @Operation(summary = "提交回答", description = "提交用户回答，流式返回下一道面试题（SSE）。同一 session 同时只允许一个请求在处理")
     @RateLimit(count = 20, seconds = 60, message = "答题过于频繁，请控制节奏")
     @PostMapping("/answer")
     public SseEmitter answerQuestion(@RequestBody InterviewAnswerRequest request) {
-        // Redis 分布式锁：防止同一 session 的并发答题请求导致状态不一致
         if (!sessionService.acquireAnswerLock(request.getSessionToken())) {
             throw new RuntimeException("当前 AI 正在回复上一道题，请稍候再提交");
         }
+
         SessionContext session = sessionService.getSession(request.getSessionToken());
         if (session == null) {
             sessionService.releaseAnswerLock(request.getSessionToken());
             throw new RuntimeException("面试会话不存在或已过期");
         }
+
         return interviewService.conductInterview(session, request.getUserAnswer());
     }
 
-    // POST /api/interview/finish —— 结束面试
-    // 从 Redis 读会话 → 交给 InterviewService 生成评估报告 → 返回 JSON
     @Operation(summary = "结束面试", description = "汇总所有问答，生成综合评估报告（包含评分、逐题点评、学习建议）")
     @PostMapping("/finish")
     public InterviewReport finishInterview(@RequestBody FinishInterviewRequest request) {
@@ -92,6 +91,7 @@ public class InterviewController {
         if (session == null) {
             throw new RuntimeException("面试会话不存在或已过期");
         }
+
         return interviewService.finishInterview(session);
     }
 
@@ -126,9 +126,6 @@ public class InterviewController {
     @GetMapping("/history")
     public List<Map<String, Object>> getInterviewHistory() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            return List.of();
-        }
         return userRepository.findByUsername(auth.getName())
                 .map(user -> {
                     List<String> tokens = recordRepository.findDistinctSessionTokensByUserId(user.getId());
@@ -140,13 +137,12 @@ public class InterviewController {
                         Map<String, Object> m = new HashMap<>();
                         m.put("sessionToken", token);
                         m.put("position", first.getPosition());
-                        m.put("questionCount", records.size());
+                        m.put("questionCount", first.getQuestionCount() != null ? first.getQuestionCount() : records.size());
                         m.put("totalScore", first.getTotalScore());
                         m.put("status", first.getStatus());
                         m.put("startTime", first.getStartTime());
                         m.put("endTime", first.getEndTime());
                         m.put("reportJson", first.getReportJson());
-                        // 检查 Redis 会话是否存活
                         long ttlSeconds = sessionService.getSessionTTLSeconds(token);
                         m.put("remainingSeconds", Math.max(0, ttlSeconds));
                         if (ttlSeconds <= 0 && "IN_PROGRESS".equals(first.getStatus())) {
@@ -162,9 +158,6 @@ public class InterviewController {
     @DeleteMapping("/history/{sessionToken}")
     public Map<String, Object> deleteInterviewHistory(@PathVariable String sessionToken) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            throw new RuntimeException("未登录");
-        }
         userRepository.findByUsername(auth.getName()).ifPresent(user -> {
             recordRepository.deleteBySessionToken(sessionToken);
         });

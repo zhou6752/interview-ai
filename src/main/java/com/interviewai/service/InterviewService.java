@@ -83,7 +83,6 @@ public class InterviewService {
         session.setUserId(userId);
         sessionService.updateSession(session.getToken(), session);
 
-        // 恢复已有会话：如果 session 里已经有题目了，直接返回当前题目，不重新生成
         if (session.getQuestions() != null && !session.getQuestions().isEmpty()) {
             int idx = session.getCurrentQuestionIndex();
             if (idx >= session.getQuestions().size()) {
@@ -117,7 +116,7 @@ public class InterviewService {
         session.setCurrentQuestionText(firstQuestion);
         sessionService.updateSession(session.getToken(), session);
 
-        saveQuestionToDb(session, allQuestions.get(0), 0);
+        saveSessionRecord(session, allQuestions.size());
 
         log.info("面试开始: session={}, userId={}, totalQuestions={}, firstQuestion={}",
                 session.getToken(), userId, allQuestions.size(),
@@ -132,7 +131,6 @@ public class InterviewService {
         emitter.onTimeout(() -> log.warn("SSE 连接超时 session={}", session.getToken()));
         emitter.onError(e -> log.error("SSE 连接异常 session={}: {}", session.getToken(), e.getMessage()));
 
-        // 捕获当前 SecurityContext，传给异步线程，避免 SSE async dispatch 时被 Spring Security 拦截
         org.springframework.security.core.context.SecurityContext ctx =
                 org.springframework.security.core.context.SecurityContextHolder.getContext();
 
@@ -163,15 +161,12 @@ public class InterviewService {
                 QAPair pair = new QAPair(currentQ.getQuestion(), userAnswer, "");
                 session.addToHistory(pair);
 
-                updateQuestionAnswerInDb(session, currentQ, currentIdx, userAnswer);
-
                 int nextIdx = currentIdx + 1;
                 session.setCurrentQuestionIndex(nextIdx);
                 sessionService.updateSession(session.getToken(), session);
 
                 if (nextIdx < questions.size()) {
                     InterviewQuestionItem nextQ = questions.get(nextIdx);
-                    saveQuestionToDb(session, nextQ, nextIdx);
 
                     emitter.send(SseEmitter.event()
                             .data(objectMapper.writeValueAsString(Map.of(
@@ -223,7 +218,7 @@ public class InterviewService {
         return report;
     }
 
-    private void saveQuestionToDb(SessionContext session, InterviewQuestionItem question, int index) {
+    private void saveSessionRecord(SessionContext session, int questionCount) {
         if (session.getUserId() == null) return;
         try {
             InterviewRecord record = new InterviewRecord();
@@ -231,32 +226,12 @@ public class InterviewService {
             record.setSessionId(session.getToken());
             record.setSessionToken(session.getToken());
             record.setPosition(session.getPosition());
-            record.setQuestionIndex(index);
-            record.setQuestion(question.getQuestion());
-            record.setCategory(question.getCategory());
-            record.setDifficulty(question.getDifficulty());
+            record.setQuestionCount(questionCount);
             record.setStartTime(LocalDateTime.now());
             record.setStatus("IN_PROGRESS");
             recordRepository.save(record);
         } catch (Exception e) {
-            log.warn("保存题目到数据库失败: {}", e.getMessage());
-        }
-    }
-
-    private void updateQuestionAnswerInDb(SessionContext session, InterviewQuestionItem question,
-                                           int index, String userAnswer) {
-        if (session.getUserId() == null) return;
-        try {
-            List<InterviewRecord> records = recordRepository.findBySessionTokenOrderByQuestionIndexAsc(session.getToken());
-            for (InterviewRecord record : records) {
-                if (record.getQuestionIndex() != null && record.getQuestionIndex() == index) {
-                    record.setUserAnswer(userAnswer);
-                    recordRepository.save(record);
-                    return;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("更新答题到数据库失败: {}", e.getMessage());
+            log.warn("保存面试记录到数据库失败: {}", e.getMessage());
         }
     }
 
@@ -264,14 +239,15 @@ public class InterviewService {
         if (session.getUserId() == null) return;
         try {
             String reportJson = objectMapper.writeValueAsString(report);
-            List<InterviewRecord> records = recordRepository.findBySessionTokenOrderByQuestionIndexAsc(session.getToken());
-            for (InterviewRecord record : records) {
-                record.setTotalScore((int) report.getOverallScore());
-                record.setReportJson(reportJson);
-                record.setEndTime(LocalDateTime.now());
-                record.setStatus("COMPLETED");
-            }
-            recordRepository.saveAll(records);
+            List<InterviewRecord> records = recordRepository
+                    .findBySessionTokenOrderByQuestionIndexAsc(session.getToken());
+            if (records.isEmpty()) return;
+            InterviewRecord record = records.get(0);
+            record.setTotalScore((int) report.getOverallScore());
+            record.setReportJson(reportJson);
+            record.setEndTime(LocalDateTime.now());
+            record.setStatus("COMPLETED");
+            recordRepository.save(record);
         } catch (Exception e) {
             log.warn("保存报告到数据库失败: {}", e.getMessage());
         }

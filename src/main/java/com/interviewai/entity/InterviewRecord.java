@@ -38,6 +38,9 @@ public class InterviewRecord {
     @Column(name = "user_answer", columnDefinition = "TEXT")
     private String userAnswer;
 
+    @Column(name = "question_count")
+    private Integer questionCount;
+
     @Column(name = "total_score")
     private Integer totalScore;
 
@@ -76,6 +79,8 @@ public class InterviewRecord {
     public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
     public String getUserAnswer() { return userAnswer; }
     public void setUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
+    public Integer getQuestionCount() { return questionCount; }
+    public void setQuestionCount(Integer questionCount) { this.questionCount = questionCount; }
     public Integer getTotalScore() { return totalScore; }
     public void setTotalScore(Integer totalScore) { this.totalScore = totalScore; }
     public String getReportJson() { return reportJson; }

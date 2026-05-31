@@ -42,6 +42,15 @@
           </div>
           <div class="history-actions">
             <el-button
+              v-if="item.status === 'COMPLETED'"
+              size="small"
+              type="primary"
+              plain
+              @click.stop="exportPdf(item)"
+            >
+              导出 PDF
+            </el-button>
+            <el-button
               v-if="item.status === 'IN_PROGRESS'"
               size="small"
               @click.stop="continueInterview(item)"
@@ -120,6 +129,10 @@ function showHistoryReport(item) {
 
 function continueInterview(item) {
   router.push({ path: '/interview', query: { sessionToken: item.sessionToken, position: item.position } })
+}
+
+function exportPdf(item) {
+  window.open(`/api/interview/report/${item.sessionToken}/pdf`, '_blank')
 }
 
 async function deleteHistory(item) {

@@ -91,6 +91,10 @@ export function finishInterview(sessionToken) {
   return apiClient.post('/interview/finish', { sessionToken }).then(res => res.data)
 }
 
+export function exportInterviewReportPdf(sessionToken) {
+  return apiClient.get(`/interview/report/${sessionToken}/pdf`, { responseType: 'blob' })
+}
+
 export async function answerQuestion(sessionToken, userAnswer, onEvent, onDone, onError) {
   const token = localStorage.getItem('token')
   const controller = new AbortController()

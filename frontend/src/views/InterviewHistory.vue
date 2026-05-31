@@ -79,7 +79,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
-import { getInterviewHistory, deleteInterviewHistory } from '../api/index.js'
+import { getInterviewHistory, deleteInterviewHistory, exportInterviewReportPdf } from '../api/index.js'
 import ReportDialog from '../components/ReportDialog.vue'
 
 const router = useRouter()
@@ -131,8 +131,18 @@ function continueInterview(item) {
   router.push({ path: '/interview', query: { sessionToken: item.sessionToken, position: item.position } })
 }
 
-function exportPdf(item) {
-  window.open(`/api/interview/report/${item.sessionToken}/pdf`, '_blank')
+async function exportPdf(item) {
+  try {
+    const res = await exportInterviewReportPdf(item.sessionToken)
+    const url = URL.createObjectURL(res.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'interview-report.pdf'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    ElMessage.error('导出 PDF 失败，请重试')
+  }
 }
 
 async function deleteHistory(item) {

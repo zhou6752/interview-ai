@@ -13,6 +13,7 @@ import com.interviewai.service.InterviewService;
 import com.interviewai.service.SessionService;
 import com.interviewai.service.SkillService;
 import com.interviewai.util.PdfExporter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
@@ -38,17 +39,20 @@ public class InterviewController {
     private final SkillService skillService;
     private final InterviewRecordRepository recordRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     public InterviewController(InterviewService interviewService,
                                SessionService sessionService,
                                SkillService skillService,
                                InterviewRecordRepository recordRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               ObjectMapper objectMapper) {
         this.interviewService = interviewService;
         this.sessionService = sessionService;
         this.skillService = skillService;
         this.recordRepository = recordRepository;
         this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Operation(summary = "开始面试", description = "创建新的面试会话，返回 sessionToken、总题数和第一道题")
@@ -110,16 +114,26 @@ public class InterviewController {
     @Operation(summary = "导出面试报告 PDF", description = "根据 sessionToken 生成并下载面试报告的 PDF 文件")
     @GetMapping("/report/{sessionToken}/pdf")
     public ResponseEntity<byte[]> exportReportPdf(@PathVariable String sessionToken) {
-        SessionContext session = sessionService.getSession(sessionToken);
-        if (session == null || session.getHistory() == null || session.getHistory().isEmpty()) {
+        List<InterviewRecord> records = recordRepository
+                .findBySessionTokenOrderByQuestionIndexAsc(sessionToken);
+        if (records.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        InterviewReport report = interviewService.finishInterview(session);
-        byte[] pdfBytes = PdfExporter.exportInterviewReport(report, session.getPosition());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=interview-report.pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfBytes);
+        InterviewRecord first = records.get(0);
+        String reportJson = first.getReportJson();
+        if (reportJson == null || reportJson.isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            InterviewReport report = objectMapper.readValue(reportJson, InterviewReport.class);
+            byte[] pdfBytes = PdfExporter.exportInterviewReport(report, first.getPosition());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=interview-report.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "我的面试历史", description = "返回当前用户的所有历史面试记录，按 session 分组")

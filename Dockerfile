@@ -5,6 +5,9 @@ COPY src ./src
 RUN mvn package -DskipTests -q
 
 FROM eclipse-temurin:17-jre-alpine
+RUN apk add --no-cache fontconfig
+COPY fonts/ /usr/share/fonts/noto/
+RUN fc-cache -fv
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080

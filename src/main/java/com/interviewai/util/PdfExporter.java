@@ -23,8 +23,8 @@ public class PdfExporter {
             PdfDocument pdf = new PdfDocument(writer);
             Document doc = new Document(pdf);
 
-            PdfFont titleFont = PdfFontFactory.createFont("Helvetica-Bold");
-            PdfFont bodyFont = PdfFontFactory.createFont("Helvetica");
+            PdfFont titleFont = loadChineseFont(true);
+            PdfFont bodyFont = loadChineseFont(false);
 
             Paragraph title = new Paragraph("模拟面试评估报告")
                     .setFont(titleFont).setFontSize(20)
@@ -68,5 +68,22 @@ public class PdfExporter {
         } catch (Exception e) {
             throw new RuntimeException("PDF 生成失败：" + e.getMessage(), e);
         }
+    }
+
+    private static PdfFont loadChineseFont(boolean bold) {
+        String[] candidatePaths = {
+            "/usr/share/fonts/noto/NotoSansCJKsc-" + (bold ? "Bold" : "Regular") + ".otf",
+            "/usr/share/fonts/noto-cjk/NotoSansCJKsc-" + (bold ? "Bold" : "Regular") + ".otf",
+            "/usr/share/fonts/truetype/noto/NotoSansCJKsc-" + (bold ? "Bold" : "Regular") + ".otf",
+            "C:/Windows/Fonts/" + (bold ? "simhei.ttf" : "simsun.ttc,0"),
+            bold ? "Helvetica-Bold" : "Helvetica",
+        };
+        for (String path : candidatePaths) {
+            try {
+                return PdfFontFactory.createFont(path);
+            } catch (Exception ignored) {
+            }
+        }
+        throw new RuntimeException("无法加载任何字体文件");
     }
 }
